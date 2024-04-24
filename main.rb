@@ -12,7 +12,7 @@ def yamls(path)
   end
 end
 
-url = ENV["ROCKETCHAT_WEBHOOK_URL"]
+url = ENV.fetch("ROCKETCHAT_WEBHOOK_URL", nil)
 path = ARGV[0] || "conf/*.yml"
 data = yamls(path)["instances"]
 
@@ -22,7 +22,7 @@ end
 
 reports = instances.map(&:report)
 
-if url.empty? || url.nil?
+if url.nil? || url.empty?
   puts reports
   exit 0
 end
