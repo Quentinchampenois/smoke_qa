@@ -22,7 +22,8 @@ class Instance
 
     instance.features = features&.map do |feature|
       f = Feature.new(url, feature["name"], feature["expected"], feature["required"])
-      f.run(instance.body)
+      body = instance.body.force_encoding('UTF-8')
+      f.run(body)
       f
     end || []
 
