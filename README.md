@@ -44,3 +44,11 @@ instances:
 ```
 
 3. Run script `ruby main`
+Alternatively you can a specific file `ruby main conf/qrcode.yml`
+
+## Features
+
+* Check Status Code
+* Define a response time limit
+* Search into page source code
+* Send report to RocketChat webhook
