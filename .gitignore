@@ -1,0 +1,4 @@
+data/data.yml
+.env
+data/
+conf/*.yml

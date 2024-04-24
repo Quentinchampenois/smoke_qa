@@ -1,0 +1,39 @@
+instances:
+  - name: <APP NAME>
+    url: <APP URL>
+    request:
+      status: 200
+      max_request_time: 6.0
+    features:
+      - name: matomo
+        required: true
+        expected: "https://tarteaucitron.io/load.js?domain=<HOST>&uuid=<UUID>"
+      - name: Tarte au citron
+        required: true
+        expected: "tarteaucitron"
+      - name: Message sur la page d'accueil
+        required: false
+        expected: "Bienvenue sur <APP NAME> !"
+      - name: Homepage Content Block "Les propositions mises en avant"
+        required: true
+        expected: "Propositions mises en avant"
+#      - name: <RULE NAME>
+#        required: <true|false>
+#        expected: <EXPECTED VALUE AS STRING>
+  - name: <INSTANCE> (<ENV>) - open data
+    url: https://<URL>/open-data/download
+    request:
+      status: 302
+      max_request_time: 3.0
+  - name: <INSTANCE> (<ENV>) - Tarteaucitron matomo
+    url: https://tarteaucitron.io/load.js?domain=<HOST>&uuid=<UUID>
+    request:
+      status: 200
+      max_request_time: 3.0
+    features:
+      - name: matomo
+        required: true
+        expected: "https://argus.osp.cat/matomo.js"
+      - name: IdSite <MATOMO_ID>
+        required: true
+        expected: "tarteaucitron.user.matomoId = <MATOMO_ID>"
