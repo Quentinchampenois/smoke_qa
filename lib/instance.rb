@@ -13,12 +13,14 @@ class Instance
     features = yaml["features"]
     instance = new(name, url)
     timer = Time.now
-    instance.request = Faraday.get(instance.url)
+    conn = Faraday.new do |conn|
+      conn.options.timeout = 10
+    end
+    instance.request = conn.get(instance.url)
     instance.request_time = Time.now - timer
     instance.status = instance.request.status
     instance.body = instance.request.body
     instance.request_feature = yaml["request"]
-    sleep 0.5
 
     instance.features = features&.map do |feature|
       f = Feature.new(url, feature["name"], feature["expected"], feature["required"])
@@ -27,6 +29,13 @@ class Instance
       f
     end || []
 
+    instance
+
+  rescue StandardError => e
+    puts "Error: #{e.message}"
+    instance.status = 408
+    instance.request_feature = []
+    instance.features = []
     instance
   end
 

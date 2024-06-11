@@ -5,37 +5,39 @@ require 'faraday'
 require "yaml"
 require_relative 'lib/instance'
 require_relative 'lib/feature'
+require_relative 'lib/load'
 
-def yamls(path)
-  Dir.glob(path).each_with_object({ "instances" => [] }) do |file, obj|
-    obj["instances"] += YAML.load_file(file)["instances"]
+begin
+  url = ENV.fetch("ROCKETCHAT_WEBHOOK_URL", nil)
+  path = ARGV[0] || "conf/*.yml"
+  data = Lib::Load.yamls(path)["instances"]
+
+  threads = []
+  data.each do |instance|
+    threads << Thread.new { Instance.run(instance) }
   end
-end
 
-url = ENV.fetch("ROCKETCHAT_WEBHOOK_URL", nil)
-path = ARGV[0] || "conf/*.yml"
-data = yamls(path)["instances"]
+  threads.each(&:join)
 
-instances = data.map do |instance|
-  Instance.run(instance)
-end
+  reports = threads.map { |instance| instance.value.report rescue instance.value.name }
 
-reports = instances.map(&:report)
+  if url.nil? || url.empty?
+    puts reports
+    exit 0
+  end
 
-if url.nil? || url.empty?
-  puts reports
-  exit 0
-end
+  if reports.any?
+    payload = {
+      "alias" => "ControlTower Bot",
+      "emoji" => ":voisins_vigilants_et_solidaires:",
+      "text" => reports.join("\n"),
+    }
 
-if reports.any?
-  payload = {
-    "alias" => "ControlTower Bot",
-    "emoji" => ":voisins_vigilants_et_solidaires:",
-    "text" => reports.join("\n"),
-  }
-
-  Faraday.post(url, payload.to_json, "Content-Type" => "application/json")
-  puts status: "invalid", message: "Reporting", payload: reports.join("\n")
-else
-  puts status: "success", message: "All good !"
+    Faraday.post(url, payload.to_json, "Content-Type" => "application/json")
+    puts status: "invalid", message: "Reporting", payload: reports.join("\n")
+  else
+    puts status: "success", message: "All good !"
+  end
+rescue => e
+  puts status: "error", message: e.message, backtrace: e.backtrace
 end
