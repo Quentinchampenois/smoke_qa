@@ -8,6 +8,7 @@ require_relative 'lib/feature'
 require_relative 'lib/load'
 
 begin
+  logs_filename = ENV.fetch("SMOKE_QA_LOGS", "smoke_qa.logs")
   url = ENV.fetch("ROCKETCHAT_WEBHOOK_URL", nil)
   path = ARGV[0] || "conf/*.yml"
   data = Lib::Load.yamls(path)["instances"]
@@ -34,9 +35,13 @@ begin
     }
 
     Faraday.post(url, payload.to_json, "Content-Type" => "application/json")
-    puts status: "invalid", message: "Reporting", payload: reports.join("\n")
+    File.open(logs_filename, 'a') do |file|
+      file.puts status: "invalid", message: "Reporting", payload: reports.join("\n")
+    end
   else
-    puts status: "success", message: "All good !"
+    File.open(logs_filename, 'a') do |file|
+      file.puts status: "success", message: "All good !"
+    end
   end
 rescue => e
   puts status: "error", message: e.message, backtrace: e.backtrace
