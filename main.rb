@@ -36,11 +36,11 @@ begin
 
     Faraday.post(url, payload.to_json, "Content-Type" => "application/json")
     File.open(logs_filename, 'a') do |file|
-      file.puts status: "invalid", message: "Reporting", payload: reports.join("\n")
+      file.puts status: "invalid", message: "Reporting", payload: reports.join("\n"), date: Time.now
     end
   else
     File.open(logs_filename, 'a') do |file|
-      file.puts status: "success", message: "All good !"
+      file.puts status: "success", message: "All good !", date: Time.now
     end
   end
 rescue => e
